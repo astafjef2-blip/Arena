@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Учёт аренды квартир</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+<style>
+*{box-sizing:border-box}
+:root{--bg:#eef1f7;--card:#fff;--line:#e5e9f2;--txt:#111827;--mut:#6b7280;--pri:#4f46e5;--pri2:#4338ca;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--blue:#2563eb}
+html,body{margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:15px}
+.wrap{max-width:1150px;margin:0 auto;padding:18px 20px 60px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:var(--card);border-radius:16px;padding:16px 20px;box-shadow:0 1px 3px rgba(15,23,42,.06);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{font-size:30px}
+.brand h1{margin:0;font-size:20px}
+.brand p{margin:2px 0 0;color:var(--mut);font-size:13px}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+nav.tabs{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+.tab{border:none;background:transparent;padding:10px 16px;border-radius:11px;font-size:15px;font-weight:600;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:7px}
+.tab:hover{background:#e4e8f3;color:var(--txt)}
+.tab.active{background:var(--card);color:var(--txt);box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.navbadge{background:#e2e8f0;color:#334155;border-radius:999px;font-size:12px;padding:1px 8px}
+.navbadge.red{background:#fee2e2;color:#b91c1c}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-bottom:16px}
+.stat{background:var(--card);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.stat .lbl{color:var(--mut);font-size:13px}
+.stat .val{font-size:22px;font-weight:700;margin-top:4px;white-space:nowrap}
+.stat .sub{font-size:12px;color:var(--mut);margin-top:3px}
+.val.ok{color:var(--ok)}.val.bad{color:var(--bad)}
+.card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(15,23,42,.06);margin-bottom:16px}
+.card h3{margin:0 0 12px;font-size:16px}
+.row-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mut);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f8fafc}
+.ta-r{text-align:right}
+th.ta-r{text-align:right}
+.table-scroll{overflow-x:auto}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.b-ok{background:#dcfce7;color:#15803d}.b-warn{background:#fef3c7;color:#b45309}.b-red{background:#fee2e2;color:#b91c1c}.b-blue{background:#dbeafe;color:#1d4ed8}.b-mut{background:#e2e8f0;color:#475569}
+.btn{border:1px solid transparent;border-radius:9px;padding:9px 14px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--pri);color:#fff}.btn.primary:hover{background:var(--pri2)}
+.btn.ghost{background:#fff;border-color:#d6dce8;color:#334155}.btn.ghost:hover{background:#f1f5f9}
+.btn.danger{background:#fee2e2;color:#b91c1c}.btn.danger:hover{background:#fecaca}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.mut{color:var(--mut)}.small{font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:12px}
+label>span{display:block;margin-bottom:5px}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid #cbd5e1;border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:var(--txt)}
+input:focus,select:focus,textarea:focus{outline:2px solid #c7d2fe;border-color:var(--pri)}
+input:disabled{background:#f1f5f9;color:#94a3b8}
+textarea{resize:vertical;min-height:60px}
+.check{display:flex;align-items:center;gap:8px}
+.check input{width:auto}
+.check span{display:inline;margin:0}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:16px;padding:22px;width:100%;max-width:560px;box-shadow:0 20px 50px rgba(15,23,42,.25)}
+.modal h2{margin:0 0 16px;font-size:18px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
+#toastRoot{position:fixed;right:18px;bottom:18px;z-index:99;display:flex;flex-direction:column;gap:8px}
+.toast{background:#111827;color:#fff;padding:11px 16px;border-radius:11px;font-size:14px;box-shadow:0 8px 20px rgba(0,0,0,.25);animation:tin .25s ease;max-width:340px}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.empty{text-align:center;padding:36px 16px;color:var(--mut)}
+.empty .big{font-size:40px;margin-bottom:10px}
+.empty .btns{margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.warn-banner{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:14px}
+.list-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);gap:10px;flex-wrap:wrap}
+.list-item:last-child{border-bottom:none}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.filters select,.filters input{width:auto;min-width:150px;flex:0 1 auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🏘️</span>
+      <div>
+        <h1>Учёт аренды квартир</h1>
+        <p>договоры, жильцы, платежи и задолженности</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn ghost" data-action="demo" type="button">✨ Демо-данные</button>
+      <button class="btn ghost" data-action="export" type="button">⬇️ Экспорт</button>
+      <button class="btn ghost" data-action="import" type="button">⬆️ Импорт</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-action="tab" data-tab="dashboard" type="button">📊 Обзор</button>
+    <button class="tab" data-action="tab" data-tab="apartments" type="button">🏠 Квартиры <span class="navbadge" id="badgeApartments"></span></button>
+    <button class="tab" data-action="tab" data-tab="tenants" type="button">👤 Жильцы</button>
+    <button class="tab" data-action="tab" data-tab="leases" type="button">📄 Договоры</button>
+    <button class="tab" data-action="tab" data-tab="payments" type="button">💰 Платежи <span class="navbadge red" id="badgeOverdue"></span></button>
+  </nav>
+
+  <main id="main"></main>
+</div>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+'use strict';
+/* ============================ УТИЛИТЫ ============================ */
+const LS_KEY = 'rentTracker.v1';
+const MONTHS = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const MONTHS_S = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const pad = n => String(n).padStart(2,'0');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2,9));
+const byId = (arr, id) => arr.find(x => x.id === id);
+
+function todayISO(){ const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+function monthKey(iso){ return iso.slice(0,7); }
+function addMonths(mk, n){
+  const y = +mk.slice(0,4), m = +mk.slice(5,7) - 1 + n;
+  const d = new Date(y, m, 1);
+  return d.getFullYear() + '-' + pad(d.getMonth()+1);
+}
+function diffDays(a, b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function fmtDate(iso){ if(!iso) return '—'; const [y,m,d] = iso.split('-'); return d + '.' + m + '.' + y; }
+function fmtMonth(mk){ return MONTHS[+mk.slice(5,7)-1] + ' ' + mk.slice(0,4); }
+function fmtMoney(n){
+  try{ return new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:0}).format(n||0); }
+  catch(e){ return (n||0) + ' ₽'; }
+}
+function shortMoney(n){ return n >= 1000 ? Math.round(n/1000) + 'к' : String(n||0); }
+function remaining(p){ return Math.max(0, (p.amount||0) - (p.paidAmount||0)); }
+
+/* ============================ ДАННЫЕ ============================ */
+let storageOK = true;
+let db = load() || {apartments:[], tenants:[], leases:[], payments:[]};
+let TODAY = todayISO();
+let currentTab = 'dashboard';
+const F = {apt:'', ten:'', payStatus:'', payApt:'', paySearch:''};
+
+function load(){
+  try{ const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ storageOK = false; return null; }
+}
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+  catch(e){ storageOK = false; }
+}
+
+function tenantName(id){ const t = byId(db.tenants, id); return t ? t.name : '—'; }
+function tenantPhone(id){ const t = byId(db.tenants, id); return t && t.phone ? t.phone : ''; }
+function aptTitle(id){ const a = byId(db.apartments, id); return a ? a.title : '—'; }
+function leaseOf(p){ return byId(db.leases, p.leaseId); }
+
+function isLeaseActive(l){ return l.startDate <= TODAY && (!l.endDate || l.endDate >= TODAY); }
+function leaseState(l){
+  if(l.endDate && l.endDate < TODAY) return 'ended';
+  if(l.startDate > TODAY) return 'future';
+  return 'active';
+}
+function activeLeaseFor(aptId){ return db.leases.find(l => l.apartmentId === aptId && isLeaseActive(l)); }
+
+function payStatus(p){
+  const rem = remaining(p);
+  if(p.paidAt && rem <= 0) return 'paid';
+  if(p.paidAt && rem > 0) return 'partial';
+  return p.dueDate < TODAY ? 'overdue' : 'pending';
+}
+function statusOrder(s){ return {overdue:0, partial:1, pending:2, paid:3}[s]; }
+function statusBadge(s){
+  return {
+    paid:    '<span class="badge b-ok">Оплачен</span>',
+    partial: '<span class="badge b-warn">Частично</span>',
+    pending: '<span class="badge b-blue">Ожидает</span>',
+    overdue: '<span class="badge b-red">Просрочен</span>'
+  }[s];
+}
+function debtTotal(){
+  return db.payments.reduce((a,p) => { const s = payStatus(p); return (s==='overdue'||s==='partial') ? a + remaining(p) : a; }, 0);
+}
+
+/* ================== ГЕНЕРАЦИЯ ГРАФИКА ПЛАТЕЖЕЙ ================== */
+function periodsFor(l){
+  const start = monthKey(l.startDate);
+  const end = l.endDate ? monthKey(l.endDate) : addMonths(monthKey(TODAY), 1);
+  const arr = [];
+  for(let mk = start; mk <= end; mk = addMonths(mk, 1)){
+    arr.push(mk);
+    if(arr.length > 600) break;
+  }
+  return arr;
+}
+function syncSchedule(){
+  for(const l of db.leases){
+    const periods = periodsFor(l);
+    for(const mk of periods){
+      let p = db.payments.find(x => x.leaseId === l.id && x.period === mk);
+      if(!p){
+        db.payments.push({
+          id: uid(), leaseId: l.id, period: mk, amount: l.rent,
+          dueDate: mk + '-' + pad(Math.min(Math.max(l.payDay||10,1),28)),
+          paidAt: null, paidAmount: 0, method: null, note: null, manual: false
+        });
+      } else if(!p.paidAt && !p.manual && p.amount !== l.rent){
+        p.amount = l.rent;
+      }
+    }
+    const set = new Set(periods);
+    db.payments = db.payments.filter(p => {
+      if(p.leaseId !== l.id) return true;
+      if(set.has(p.period)) return true;
+      return !!p.paidAt; // оплаченную историю сохраняем даже вне срока
+    });
+  }
+  save();
+}
+
+/* ============================ ДЕМО ============================ */
+function seedDemo(){
+  const mk = monthKey(TODAY);
+  const dateIn = (n, d) => addMonths(mk, n) + '-' + pad(d);
+  db = {apartments:[], tenants:[], leases:[], payments:[]};
+  db.apartments = [
+    {id:'a1', title:'ул. Ленина, 15, кв. 42', address:'Воронеж', rooms:2, area:54, rent:32000, notes:'Евроремонт, балкон, стиральная машина'},
+    {id:'a2', title:'пр-т Революции, 58, кв. 12', address:'Воронеж', rooms:1, area:36, rent:24000, notes:'Рядом парк, подходит для долгосрочной аренды'},
+    {id:'a3', title:'ул. Кирова, 4, кв. 101', address:'Воронеж', rooms:3, area:78, rent:45000, notes:'Домофон, парковка, полностью меблирована'},
+    {id:'a4', title:'ул. Пушкинская, 7а, кв. 5', address:'Воронеж', rooms:0, area:28, rent:19000, notes:'Студия после ремонта'},
+    {id:'a5', title:'ул. 9 Января, 122, кв. 33', address:'Воронеж', rooms:2, area:52, rent:28000, notes:'Требуется лёгкий ремонт, свободна с осени'}
+  ];
+  db.tenants = [
+    {id:'t1', name:'Иванов Алексей Петрович', phone:'+7 920 412-33-21', doc:'паспорт 3600 123456', notes:'Съехал по переезду'},
+    {id:'t2', name:'Смирнова Ольга Викторовна', phone:'+7 903 650-77-14', doc:'', notes:'Работает удалённо, очень аккуратная'},
+    {id:'t3', name:'Козлов Дмитрий Сергеевич', phone:'+7 951 856-10-02', doc:'', notes:''},
+    {id:'t4', name:'Морозова Анна Игоревна', phone:'+7 961 123-45-67', doc:'', notes:'Живёт с кошкой, депозит внесён'}
+  ];
+  db.leases = [
+    {id:'l1', apartmentId:'a1', tenantId:'t1', startDate:dateIn(-11,1), endDate:dateIn(-3,20), rent:30000, payDay:10, deposit:30000, notes:'Прожил 8 месяцев, съехал досрочно', earlyEnded:true},
+    {id:'l2', apartmentId:'a1', tenantId:'t3', startDate:dateIn(-3,1), endDate:dateIn(9,1), rent:32000, payDay:5, deposit:64000, notes:'', earlyEnded:false},
+    {id:'l3', apartmentId:'a3', tenantId:'t2', startDate:dateIn(-5,1), endDate:null, rent:45000, payDay:15, deposit:45000, notes:'Бессрочный договор', earlyEnded:false},
+    {id:'l4', apartmentId:'a4', tenantId:'t4', startDate:dateIn(-1,1), endDate:dateIn(11,1), rent:19000, payDay:25, deposit:19000, notes:'', earlyEnded:false},
+    {id:'l5', apartmentId:'a2', tenantId:'t4', startDate:dateIn(1,1), endDate:dateIn(13,1), rent:24000, payDay:10, deposit:24000, notes:'Будущий заезд с 1-го числа', earlyEnded:false}
+  ];
+  syncSchedule();
+  const methods = ['Перевод','Карта','Наличные'];
+  let i = 0;
+  for(const p of db.payments){
+    if((p.leaseId === 'l2' || p.leaseId === 'l4') && p.period === mk) continue; // текущий месяц оставляем неоплаченным
+    if(p.dueDate < TODAY){
+      p.paidAmount = p.amount;
+      p.paidAt = p.dueDate;
+      p.method = methods[i++ % methods.length];
+    }
+  }
+  save();
+}
+
+/* ============================ МОДАЛКИ ============================ */
+const modalRoot = document.getElementById('modalRoot');
+function closeModal(){ modalRoot.innerHTML = ''; }
+function openModal(html){
+  modalRoot.innerHTML = '<div class="overlay" data-action="close-modal"><div class="modal" onclick="event.stopPropagation()">' + html + '</div></div>';
+}
+function formModal(title, fieldsHtml, submitLabel, onSubmit){
+  openModal('<form id="mForm"><h2>' + esc(title) + '</h2>' + fieldsHtml +
+    '<div class="modal-actions"><button type="button" class="btn ghost" data-action="close-modal">Отмена</button>' +
+    '<button class="btn primary" type="submit">' + esc(submitLabel) + '</button></div></form>');
+  document.getElementById('mForm').onsubmit = e => {
+    e.preventDefault();
+    onSubmit(Object.fromEntries(new FormData(e.target).entries()));
+  };
+}
+function confirmModal(text, onYes, yesLabel){
+  openModal('<h2>Подтверждение</h2><p style="margin:0 0 18px">' + text + '</p>' +
+    '<div class="modal-actions"><button type="button" class="btn ghost" data-action="close-modal">Отмена</button>' +
+    '<button type="button" class="btn danger" id="mYes">' + esc(yesLabel || 'Удалить') + '</button></div>');
+  document.getElementById('mYes').onclick = () => { closeModal(); onYes(); };
+}
+
+function toast(msg){
+  const root = document.getElementById('toastRoot');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  root.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 2300);
+  setTimeout(() => el.remove(), 2700);
+}
+
+/* ============================ ФОРМЫ ============================ */
+function openApartmentModal(a){
+  const v = a || {};
+  formModal(a ? 'Редактировать квартиру' : 'Новая квартира', `
+    <div class="grid2">
+      <label style="grid-column:1/-1"><span>Название / адрес *</span>
+        <input name="title" required value="${esc(v.title||'')}" placeholder="ул. Ленина, 15, кв. 42"></label>
+      <label><span>Город / район</span>
+        <input name="address" value="${esc(v.address||'')}" placeholder="Воронеж"></label>
+      <label><span>Ставка, ₽/мес</span>
+        <input name="rent" type="number" min="0" step="500" value="${v.rent ?? ''}" placeholder="30000"></label>
+      <label><span>Комнат (0 — студия)</span>
+        <input name="rooms" type="number" min="0" max="20" value="${v.rooms ?? ''}"></label>
+      <label><span>Площадь, м²</span>
+        <input name="area" type="number" min="0" step="0.1" value="${v.area ?? ''}"></label>
+      <label style="grid-column:1/-1"><span>Заметки</span>
+        <textarea name="notes">${esc(v.notes||'')}</textarea></label>
+    </div>`, 'Сохранить', data => {
+    if(!data.title.trim()){ toast('Укажите название или адрес'); return; }
+    const rec = {
+      title: data.title.trim(),
+      address: data.address.trim(),
+      rent: Number(data.rent) || 0,
+      rooms: data.rooms === '' ? null : Math.max(0, parseInt(data.rooms,10)),
+      area: data.area === '' ? null : Math.max(0, parseFloat(data.area)),
+      notes: data.notes.trim()
+    };
+    if(a){ Object.assign(a, rec); toast('Квартира обновлена'); }
+    else { db.apartments.push(Object.assign({id: uid()}, rec)); toast('Квартира добавлена'); }
+    save(); closeModal(); renderAll();
+  });
+}
+
+function delApartment(id){
+  if(db.leases.some(l => l.apartmentId === id)){
+    toast('Нельзя удалить: по этой квартире есть договоры. Сначала удалите договоры.');
+    return;
+  }
+  const a = byId(db.apartments, id);
+  confirmModal('Удалить квартиру <b>«' + esc(a.title) + '»</b>?', () => {
+    db.apartments = db.apartments.filter(x => x.id !== id);
+    save(); renderAll(); toast('Квартира удалена');
+  });
+}
+
+function openTenantModal(t){
+  const v = t || {};
+  formModal(t ? 'Редактировать жильца' : 'Новый жилец', `
+    <div class="grid2">
+      <label style="grid-column:1/-1"><span>ФИО *</span>
+        <input name="name" required value="${esc(v.name||'')}" placeholder="Иванов Алексей Петрович"></label>
+      <label><span>Телефон</span>
+        <input name="phone" value="${esc(v.phone||'')}" placeholder="+7 900 000-00-00"></label>
+      <label><span>Документ</span>
+        <input name="doc" value="${esc(v.doc||'')}" placeholder="паспорт, данные"></label>
+      <label style="grid-column:1/-1"><span>Заметки</span>
+        <textarea name="notes">${esc(v.notes||'')}</textarea></label>
+    </div>`, 'Сохранить', data => {
+    if(!data.name.trim()){ toast('Укажите ФИО'); return; }
+    const rec = {name: data.name.trim(), phone: data.phone.trim(), doc: data.doc.trim(), notes: data.notes.trim()};
+    if(t){ Object.assign(t, rec); toast('Жилец обновлён'); }
+    else { db.tenants.push(Object.assign({id: uid()}, rec)); toast('Жилец добавлен'); }
+    save(); closeModal(); renderAll();
+  });
+}
+
+function delTenant(id){
+  if(db.leases.some(l => l.tenantId === id)){
+    toast('Нельзя удалить: у жильца есть договоры. Сначала удалите договоры.');
+    return;
+  }
+  confirmModal('Удалить жильца <b>' + esc(tenantName(id)) + '</b>?', () => {
+    db.tenants = db.tenants.filter(x => x.id !== id);
+    save(); renderAll(); toast('Жилец удалён');
+  });
+}
+
+function openLeaseModal(l, prefill){
+  prefill = prefill || {};
+  if(!l && (!db.apartments.length || !db.tenants.length)){
+    toast('Сначала добавьте хотя бы одну квартиру и одного жильца');
+    return;
+  }
+  const v = l || {};
+  const aptId = v.apartmentId || prefill.apartmentId || '';
+  const aptOpts = db.apartments.map(a =>
+    '<option value="' + a.id + '"' + (a.id === aptId ? ' selected' : '') + '>' + esc(a.title) + '</option>').join('');
+  const tenOpts = db.tenants.map(t =>
+    '<option value="' + t.id + '"' + (t.id === (v.tenantId||'') ? ' selected' : '') + '>' + esc(t.name) + '</option>').join('');
+  const openEnded = l ? !l.endDate : false;
+  formModal(l ? 'Редактировать договор' : 'Новый договор', `
+    <div class="grid2">
+      <label><span>Квартира *</span><select name="apartmentId" required>${aptOpts}</select></label>
+      <label><span>Жилец *</span><select name="tenantId" required>${tenOpts}</select></label>
+      <label><span>Дата начала *</span>
+        <input type="date" name="startDate" required value="${esc(v.startDate || prefill.startDate || TODAY)}"></label>
+      <label><span>Ставка, ₽/мес *</span>
+        <input type="number" name="rent" min="0" step="500" required value="${v.rent ?? prefill.rent ?? ''}"></label>
+      <label><span>Дата окончания</span>
+        <input type="date" name="endDate" id="f_end" value="${esc(v.endDate||'')}" ${openEnded ? 'disabled' : ''}></label>
+      <label><span>День оплаты (1–28) *</span>
+        <input type="number" name="payDay" min="1" max="28" required value="${v.payDay || 10}"></label>
+      <label><span>Залог, ₽</span>
+        <input type="number" name="deposit" min="0" step="500" value="${v.deposit ?? ''}"></label>
+      <label class="check" style="align-self:end;padding-bottom:12px">
+        <input type="checkbox" name="open" ${openEnded ? 'checked' : ''}
+          onchange="document.getElementById('f_end').disabled=this.checked">
+        <span>Бессрочный договор</span></label>
+      <label style="grid-column:1/-1"><span>Заметки</span>
+        <textarea name="notes">${esc(v.notes||'')}</textarea></label>
+    </div>`, 'Сохранить', data => {
+    const rent = Number(data.rent);
+    if(!rent || rent <= 0){ toast('Укажите ставку аренды'); return; }
+    const payDay = Math.min(Math.max(parseInt(data.payDay,10) || 10, 1), 28);
+    const startDate = data.startDate;
+    const endDate = data.open === 'on' ? null : (data.endDate || null);
+    if(endDate && endDate < startDate){ toast('Дата окончания раньше даты начала'); return; }
+    // пересечение сроков по той же квартире
+    const clash = db.leases.some(x =>
+      x.apartmentId === data.apartmentId && (!l || x.id !== l.id) &&
+      x.startDate < (endDate || '9999-12-31') && startDate < (x.endDate || '9999-12-31'));
+    if(clash){ toast('У этой квартиры уже есть договор с пересекающимися сроками'); return; }
+    const rec = {
+      apartmentId: data.apartmentId, tenantId: data.tenantId,
+      startDate, endDate, rent, payDay,
+      deposit: Number(data.deposit) || 0,
+      notes: data.notes.trim()
+    };
+    if(l){
+      const endedEarly = l.earlyEnded && rec.endDate !== l.endDate;
+      Object.assign(l, rec);
+      if(endedEarly && rec.endDate && rec.endDate >= TODAY) l.earlyEnded = false;
+      toast('Договор обновлён');
+    } else {
+      db.leases.push(Object.assign({id: uid(), earlyEnded: false}, rec));
+      toast('Договор создан, график платежей построен');
+    }
+    save(); closeModal(); syncSchedule(); renderAll();
+  });
+}
+
+function delLease(id){
+  const l = byId(db.leases, id);
+  confirmModal('Удалить договор по квартире <b>«' + esc(aptTitle(l.apartmentId)) + '»</b> с жильцом <b>' + esc(tenantName(l.tenantId)) + '</b>?<br>Вместе с ним удалятся все его платежи, включая историю оплат.', () => {
+    db.leases = db.leases.filter(x => x.id !== id);
+    db.payments = db.payments.filter(p => p.leaseId !== id);
+    save(); renderAll(); toast('Договор удалён');
+  });
+}
+
+function openEndLease(l){
+  formModal('Завершить договор досрочно', `
+    <p class="mut" style="margin:0 0 12px">Квартира: <b>${esc(aptTitle(l.apartmentId))}</b>, жилец: <b>${esc(tenantName(l.tenantId))}</b>.
+    Неоплаченные платежи после выбранной даты будут удалены из графика.</p>
+    <label><span>Фактическая дата окончания *</span>
+      <input type="date" name="endDate" required min="${esc(l.startDate)}" value="${esc(TODAY)}"></label>`,
+    'Завершить', data => {
+      if(!data.endDate || data.endDate < l.startDate){ toast('Укажите корректную дату окончания'); return; }
+      l.endDate = data.endDate;
+      l.earlyEnded = l.endDate < TODAY ? true : l.earlyEnded;
+      save(); closeModal(); syncSchedule(); renderAll(); toast('Договор завершён');
+    });
+}
+
+function openPayModal(id){
+  const p = byId(db.payments, id);
+  const l = leaseOf(p);
+  const rem = remaining(p);
+  formModal('Оплата — ' + fmtMonth(p.period), `
+    <p class="mut" style="margin:0 0 12px">${esc(aptTitle(l.apartmentId))} · ${esc(tenantName(l.tenantId))}<br>
+    К оплате: <b>${fmtMoney(p.amount)}</b>${rem < p.amount ? ' · внесено: ' + fmtMoney(p.paidAmount||0) + ' · осталось: <b>' + fmtMoney(rem) + '</b>' : ''}</p>
+    <div class="grid2">
+      <label><span>Дата оплаты *</span>
+        <input type="date" name="paidAt" required value="${esc(TODAY)}"></label>
+      <label><span>Сумма платежа, ₽ *</span>
+        <input type="number" name="amount" min="1" step="100" required value="${rem}"></label>
+      <label><span>Способ</span>
+        <select name="method">
+          <option>Перевод</option><option>Карта</option><option>Наличные</option><option>Другое</option>
+        </select></label>
+      <label><span>Комментарий</span>
+        <input name="note" value="${esc(p.note||'')}"></label>
+    </div>`, 'Сохранить оплату', data => {
+    const amt = Number(data.amount) || 0;
+    if(amt <= 0){ toast('Укажите сумму'); return; }
+    p.paidAmount = (p.paidAmount || 0) + amt;
+    p.paidAt = data.paidAt || TODAY;
+    p.method = data.method || null;
+    p.note = data.note.trim() || null;
+    save(); closeModal(); renderAll();
+    toast(remaining(p) === 0 ? 'Платёж полностью оплачен ✅' : 'Частичная оплата зафиксирована');
+  });
+}
+
+function openEditPayment(id){
+  const p = byId(db.payments, id);
+  const l = leaseOf(p);
+  formModal('Изменить платёж', `
+    <p class="mut" style="margin:0 0 12px">${esc(aptTitle(l.apartmentId))} · ${esc(tenantName(l.tenantId))} · ${fmtMonth(p.period)}</p>
+    <div class="grid2">
+      <label><span>Сумма, ₽ *</span>
+        <input type="number" name="amount" min="0" step="100" required value="${p.amount}"></label>
+      <label><span>К оплате до *</span>
+        <input type="date" name="dueDate" required value="${esc(p.dueDate)}"></label>
+    </div>`, 'Сохранить', data => {
+    const amt = Number(data.amount);
+    if(!(amt > 0)){ toast('Укажите сумму'); return; }
+    p.amount = amt;
+    p.dueDate = data.dueDate || p.dueDate;
+    p.manual = true;
+    save(); closeModal(); renderAll(); toast('Платёж обновлён');
+  });
+}
+
+function unpay(id){
+  const p = byId(db.payments, id);
+  confirmModal('Отменить отметку об оплате за ' + fmtMonth(p.period) + '?', () => {
+    p.paidAt = null; p.paidAmount = 0; p.method = null; p.note = null;
+    save(); renderAll(); toast('Оплата отменена');
+  }, 'Отменить оплату');
+}
+
+/* ============================ РЕНДЕР ============================ */
+const main = document.getElementById('main');
+
+function renderAll(){
+  TODAY = todayISO();
+  syncSchedule();
+  renderNav();
+  renderMain();
+}
+
+function renderNav(){
+  document.getElementById('badgeApartments').textContent = db.apartments.length || '';
+  const od = db.payments.filter(p => payStatus(p) === 'overdue').length;
+  document.getElementById('badgeOverdue').textContent = od || '';
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === currentTab));
+}
+
+function warnBanner(){
+  return storageOK ? '' : '<div class="warn-banner">⚠️ Браузер не дал доступ к локальному хранилищу — данные сохраняются только до перезагрузки страницы. Периодически делайте «Экспорт», чтобы не потерять их.</div>';
+}
+function renderMain(){
+  ({dashboard: renderDashboard, apartments: renderApartments, tenants: renderTenants, leases: renderLeases, payments: renderPayments}[currentTab])();
+}
+
+/* -------- Обзор -------- */
+function chartSVG(){
+  const cur = monthKey(TODAY);
+  const pts = [];
+  let max = 0;
+  for(let i = -11; i <= 0; i++){
+    const m = addMonths(cur, i);
+    const s = db.payments.filter(p => p.paidAt && monthKey(p.paidAt) === m).reduce((a,p) => a + (p.paidAmount||0), 0);
+    pts.push({m, s});
+    if(s > max) max = s;
+  }
+  if(max <= 0) max = 1;
+  const W = 620, H = 150, base = 125, bw = 34, gap = (W - 24 - 12*bw) / 11;
+  let svg = '';
+  pts.forEach((pt, i) => {
+    const h = Math.max(Math.round(pt.s / max * 92), pt.s ? 3 : 1);
+    const x = 12 + i * (bw + gap);
+    const y = base - h;
+    svg += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + h + '" rx="4" fill="' + (pt.s ? '#4f46e5' : '#e2e8f0') + '"><title>' + fmtMonth(pt.m) + ': ' + fmtMoney(pt.s) + '</title></rect>';
+    svg += '<text x="' + (x + bw/2) + '" y="142" text-anchor="middle" font-size="10" fill="#6b7280">' + MONTHS_S[+pt.m.slice(5,7)-1] + '</text>';
+    if(pt.s) svg += '<text x="' + (x + bw/2) + '" y="' + (y-4) + '" text-anchor="middle" font-size="9" fill="#334155">' + shortMoney(pt.s) + '</text>';
+  });
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto" role="img" aria-label="Доход по месяцам">' + svg + '</svg>';
+}
+
+function payMiniRow(p, actionLabel){
+  const l = leaseOf(p);
+  return '<div class="list-item"><div><b>' + esc(aptTitle(l.apartmentId)) + '</b>' +
+    '<div class="small mut">' + esc(tenantName(l.tenantId)) + ' · до ' + fmtDate(p.dueDate) + '</div></div>' +
+    '<div style="display:flex;align-items:center;gap:10px"><b>' + fmtMoney(remaining(p)) + '</b>' +
+    '<button class="btn sm primary" data-action="pay" data-id="' + p.id + '" type="button">' + actionLabel + '</button></div></div>';
+}
+
+function renderDashboard(){
+  if(!db.apartments.length && !db.leases.length && !db.payments.length){
+    main.innerHTML = warnBanner() + '<div class="card"><div class="empty"><div class="big">🏘️</div>' +
+      '<h3 style="margin:0 0 6px">Добро пожаловать в учёт аренды квартир</h3>' +
+      '<p style="margin:0">Добавьте квартиры и жильцов, заключите договор — приложение само построит график платежей,<br>будет отмечать оплаты и считать задолженности.</p>' +
+      '<div class="btns"><button class="btn primary" data-action="add-apartment" type="button">＋ Добавить квартиру</button>' +
+      '<button class="btn ghost" data-action="demo" type="button">✨ Загрузить демо-данные</button></div></div></div>';
+    return;
+  }
+  const curMk = monthKey(TODAY);
+  const rented = db.apartments.filter(a => activeLeaseFor(a.id)).length;
+  const received = db.payments.filter(p => p.paidAt && monthKey(p.paidAt) === curMk).reduce((a,p) => a + (p.paidAmount||0), 0);
+  const expected = db.payments.filter(p => monthKey(p.dueDate) === curMk && payStatus(p) !== 'paid' && payStatus(p) !== 'partial').reduce((a,p) => a + remaining(p), 0);
+  const debt = debtTotal();
+  const debtCount = db.payments.filter(p => ['overdue','partial'].includes(payStatus(p))).length;
+  const activeLeases = db.leases.filter(isLeaseActive).length;
+  const overdue = db.payments.filter(p => payStatus(p) === 'overdue').sort((a,b) => a.dueDate.localeCompare(b.dueDate)).slice(0,5);
+  const upcoming = db.payments.filter(p => payStatus(p) === 'pending' && diffDays(TODAY, p.dueDate) <= 30).sort((a,b) => a.dueDate.localeCompare(b.dueDate)).slice(0,5);
+  const endingSoon = db.leases.filter(l => isLeaseActive(l) && l.endDate && diffDays(TODAY, l.endDate) <= 45);
+
+  let html = '<div class="stats">' +
+    stat('Квартир всего', db.apartments.length, 'сдано ' + rented + ' · свободно ' + (db.apartments.length - rented)) +
+    stat('Получено в этом месяце', fmtMoney(received), 'фактические поступления') +
+    stat('Ожидается в этом месяце', fmtMoney(expected), 'по графику платежей') +
+    stat('Задолженность', fmtMoney(debt), debtCount + ' платежей', debt > 0 ? 'bad' : 'ok') +
+    stat('Активных договоров', activeLeases, 'всего договоров: ' + db.leases.length) +
+    stat('Жильцов', db.tenants.length, 'в базе') +
+    '</div>';
+
+  if(overdue.length){
+    html += '<div class="card"><h3>⛔ Просроченные платежи</h3>' + overdue.map(p => payMiniRow(p, 'Оплатить')).join('') +
+      '<div style="margin-top:10px"><button class="btn link sm" data-action="tab" data-tab="payments" type="button">Все платежи →</button></div></div>';
+  }
+  if(upcoming.length){
+    html += '<div class="card"><h3>🗓️ Ближайшие платежи (30 дней)</h3>' + upcoming.map(p => payMiniRow(p, 'Оплатить')).join('') + '</div>';
+  }
+  if(endingSoon.length){
+    html += '<div class="card"><h3>⏳ Договоры, срок которых истекает</h3>' + endingSoon.map(l =>
+      '<div class="list-item"><div><b>' + esc(aptTitle(l.apartmentId)) + '</b>' +
+      '<div class="small mut">' + esc(tenantName(l.tenantId)) + '</div></div>' +
+      '<div><span class="badge b-warn">до ' + fmtDate(l.endDate) + '</span></div></div>').join('') +
+      '<div style="margin-top:10px"><button class="btn link sm" data-action="tab" data-tab="leases" type="button">Все договоры →</button></div></div>';
+  }
+  html += '<div class="card"><h3>📈 Доход по месяцам (за последние 12 месяцев)</h3>' + chartSVG() + '</div>';
+  main.innerHTML = warnBanner() + html;
+
+  function stat(lbl, val, sub, cls){
+    return '<div class="stat"><div class="lbl">' + lbl + '</div><div class="val ' + (cls||'') + '">' + val + '</div>' +
+      (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>';
+  }
+}
+
+/* -------- Квартиры -------- */
+function aptStatusInfo(a){
+  const ls = db.leases.filter(l => l.apartmentId === a.id);
+  const active = ls.find(isLeaseActive);
+  if(active) return {cls:'b-ok', label:'Сдана · ' + tenantName(active.tenantId)};
+  const future = ls.find(l => leaseState(l) === 'future');
+  if(future) return {cls:'b-blue', label:'Бронь с ' + fmtDate(future.startDate)};
+  return {cls:'b-mut', label:'Свободна'};
+}
+
+function renderApartments(){
+  main.innerHTML = warnBanner() + '<div class="card"><div class="row-actions"><h3 style="margin:0">Квартиры</h3>' +
+    '<button class="btn primary" data-action="add-apartment" type="button">＋ Добавить квартиру</button></div>' +
+    '<input placeholder="Поиск по адресу…" value="' + esc(F.apt) + '" oninput="F.apt=this.value;renderAptRows()" style="margin-bottom:12px;max-width:320px">' +
+    '<div class="table-scroll"><table><thead><tr>' +
+    '<th>Квартира</th><th>Комнат</th><th>Площадь</th><th>Ставка</th><th>Статус</th><th class="ta-r">Действия</th>' +
+    '</tr></thead><tbody id="aptRows"></tbody></table></div></div>';
+  renderAptRows();
+}
+function renderAptRows(){
+  const tbody = document.getElementById('aptRows');
+  if(!tbody) return;
+  const q = F.apt.trim().toLowerCase();
+  const list = db.apartments.filter(a => !q || (a.title + ' ' + (a.address||'')).toLowerCase().includes(q));
+  tbody.innerHTML = list.length ? list.map(a => {
+    const s = aptStatusInfo(a);
+    return '<tr><td><b>' + esc(a.title) + '</b>' + (a.address ? '<div class="small mut">' + esc(a.address) + '</div>' : '') + '</td>' +
+      '<td>' + (a.rooms === null || a.rooms === undefined ? '—' : (a.rooms === 0 ? 'студия' : a.rooms)) + '</td>' +
+      '<td>' + (a.area ? a.area + ' м²' : '—') + '</td>' +
+      '<td>' + fmtMoney(a.rent) + '</td>' +
+      '<td><span class="badge ' + s.cls + '">' + esc(s.label) + '</span></td>' +
+      '<td class="ta-r" style="white-space:nowrap">' +
+      (!activeLeaseFor(a.id) ? '<button class="btn sm primary" data-action="rent-apartment" data-id="' + a.id + '" type="button">Сдать</button> ' : '') +
+      '<button class="btn sm ghost" data-action="edit-apartment" data-id="' + a.id + '" type="button" title="Редактировать">✏️</button> ' +
+      '<button class="btn sm danger" data-action="delete-apartment" data-id="' + a.id + '" type="button" title="Удалить">🗑</button></td></tr>';
+  }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--mut);padding:24px">Квартир не найдено</td></tr>';
+}
+
+/* -------- Жильцы -------- */
+function renderTenants(){
+  main.innerHTML = warnBanner() + '<div class="card"><div class="row-actions"><h3 style="margin:0">Жильцы</h3>' +
+    '<button class="btn primary" data-action="add-tenant" type="button">＋ Добавить жильца</button></div>' +
+    '<input placeholder="Поиск по имени…" value="' + esc(F.ten) + '" oninput="F.ten=this.value;renderTenRows()" style="margin-bottom:12px;max-width:320px">' +
+    '<div class="table-scroll"><table><thead><tr>' +
+    '<th>ФИО</th><th>Телефон</th><th>Активных договоров</th><th>Оплачено всего</th><th class="ta-r">Действия</th>' +
+    '</tr></thead><tbody id="tenRows"></tbody></table></div></div>';
+  renderTenRows();
+}
+function renderTenRows(){
+  const tbody = document.getElementById('tenRows');
+  if(!tbody) return;
+  const q = F.ten.trim().toLowerCase();
+  const list = db.tenants.filter(t => !q || t.name.toLowerCase().includes(q));
+  tbody.innerHTML = list.length ? list.map(t => {
+    const leaseIds = db.leases.filter(l => l.tenantId === t.id).map(l => l.id);
+    const activeCnt = db.leases.filter(l => l.tenantId === t.id && isLeaseActive(l)).length;
+    const paid = db.payments.filter(p => leaseIds.includes(p.leaseId)).reduce((a,p) => a + (p.paidAmount||0), 0);
+    return '<tr><td><b>' + esc(t.name) + '</b>' + (t.doc ? '<div class="small mut">' + esc(t.doc) + '</div>' : '') + '</td>' +
+      '<td>' + esc(t.phone || '—') + '</td>' +
+      '<td>' + (activeCnt ? '<span class="badge b-ok">' + activeCnt + '</span>' : '<span class="badge b-mut">0</span>') + '</td>' +
+      '<td>' + fmtMoney(paid) + '</td>' +
+      '<td class="ta-r" style="white-space:nowrap">' +
+      '<button class="btn sm ghost" data-action="edit-tenant" data-id="' + t.id + '" type="button" title="Редактировать">✏️</button> ' +
+      '<button class="btn sm danger" data-action="delete-tenant" data-id="' + t.id + '" type="button" title="Удалить">🗑</button></td></tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--mut);padding:24px">Жильцов не найдено</td></tr>';
+}
+
+/* -------- Договоры -------- */
+function leaseBadge(l){
+  const st = leaseState(l);
+  if(st === 'future') return '<span class="badge b-blue">Начнётся ' + fmtDate(l.startDate) + '</span>';
+  if(st === 'ended') return '<span class="badge b-mut">Завершён' + (l.earlyEnded ? ' досрочно' : '') + ' · ' + fmtDate(l.endDate) + '</span>';
+  if(l.endDate && diffDays(TODAY, l.endDate) <= 45) return '<span class="badge b-warn">Истекает ' + fmtDate(l.endDate) + '</span>';
+  return '<span class="badge b-ok">Активен' + (l.endDate ? ' до ' + fmtDate(l.endDate) : ' · бессрочно') + '</span>';
+}
+
+function renderLeases(){
+  main.innerHTML = warnBanner() + '<div class="card"><div class="row-actions"><h3 style="margin:0">Договоры аренды</h3>' +
+    '<button class="btn primary" data-action="add-lease" type="button">＋ Заключить договор</button></div>' +
+    '<div class="table-scroll"><table><thead><tr>' +
+    '<th>Квартира</th><th>Жилец</th><th>Начало</th><th>Окончание</th><th>Ставка</th><th>Залог</th><th>Статус</th><th class="ta-r">Действия</th>' +
+    '</tr></thead><tbody>' +
+    (db.leases.length ? db.leases.slice().sort((a,b) => b.startDate.localeCompare(a.startDate)).map(l =>
+      '<tr><td><b>' + esc(aptTitle(l.apartmentId)) + '</b></td>' +
+      '<td>' + esc(tenantName(l.tenantId)) + '<div class="small mut">' + esc(tenantPhone(l.tenantId)) + '</div></td>' +
+      '<td>' + fmtDate(l.startDate) + '</td>' +
+      '<td>' + (l.endDate ? fmtDate(l.endDate) : '<span class="mut">бессрочно</span>') + '</td>' +
+      '<td>' + fmtMoney(l.rent) + '</td>' +
+      '<td>' + (l.deposit ? fmtMoney(l.deposit) : '—') + '</td>' +
+      '<td>' + leaseBadge(l) + '</td>' +
+      '<td class="ta-r" style="white-space:nowrap">' +
+      (isLeaseActive(l) ? '<button class="btn sm ghost" data-action="end-lease" data-id="' + l.id + '" type="button" title="Завершить досрочно">⏹ Завершить</button> ' : '') +
+      '<button class="btn sm ghost" data-action="edit-lease" data-id="' + l.id + '" type="button" title="Редактировать">✏️</button> ' +
+      '<button class="btn sm danger" data-action="delete-lease" data-id="' + l.id + '" type="button" title="Удалить">🗑</button></td></tr>'
+    ).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--mut);padding:24px">Договоров пока нет — заключите первый договор из карточки квартиры или кнопкой выше</td></tr>') +
+    '</tbody></table></div></div>';
+}
+
+/* -------- Платежи -------- */
+function renderPayments(){
+  const aptOpts = '<option value="">Все квартиры</option>' + db.apartments.map(a =>
+    '<option value="' + a.id + '"' + (F.payApt === a.id ? ' selected' : '') + '>' + esc(a.title) + '</option>').join('');
+  main.innerHTML = warnBanner() + '<div class="card"><div class="row-actions"><h3 style="margin:0">Платежи</h3>' +
+    '<div class="mut small">Платежи создаются автоматически из графика договоров</div></div>' +
+    '<div class="filters">' +
+    '<select onchange="F.payStatus=this.value;renderPayRows()">' +
+      '<option value="">Все статусы</option>' +
+      '<option value="overdue"' + (F.payStatus==='overdue'?' selected':'') + '>Просроченные</option>' +
+      '<option value="pending"' + (F.payStatus==='pending'?' selected':'') + '>Ожидают</option>' +
+      '<option value="partial"' + (F.payStatus==='partial'?' selected':'') + '>Частично оплаченные</option>' +
+      '<option value="paid"' + (F.payStatus==='paid'?' selected':'') + '>Оплаченные</option>' +
+    '</select>' +
+    '<select onchange="F.payApt=this.value;renderPayRows()">' + aptOpts + '</select>' +
+    '<input placeholder="Поиск по жильцу…" value="' + esc(F.paySearch) + '" oninput="F.paySearch=this.value;renderPayRows()">' +
+    '</div>' +
+    '<div id="payStats" class="mut small" style="margin-bottom:10px"></div>' +
+    '<div class="table-scroll"><table><thead><tr>' +
+    '<th>Квартира · жилец</th><th>Месяц</th><th>К оплате до</th><th>Сумма</th><th>Оплачено</th><th>Статус</th><th class="ta-r">Действия</th>' +
+    '</tr></thead><tbody id="payRows"></tbody></table></div></div>';
+  renderPayRows();
+}
+function renderPayRows(){
+  const tbody = document.getElementById('payRows');
+  if(!tbody) return;
+  const q = F.paySearch.trim().toLowerCase();
+  let list = db.payments.filter(p => {
+    if(F.payStatus && payStatus(p) !== F.payStatus) return false;
+    if(F.payApt){
+      const l = leaseOf(p);
+      if(!l || l.apartmentId !== F.payApt) return false;
+    }
+    if(q){
+      const l = leaseOf(p);
+      if(!l || !tenantName(l.tenantId).toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+  list.sort((a,b) => {
+    const oa = statusOrder(payStatus(a)), ob = statusOrder(payStatus(b));
+    if(oa !== ob) return oa - ob;
+    return oa === 3 ? b.dueDate.localeCompare(a.dueDate) : a.dueDate.localeCompare(b.dueDate);
+  });
+  const toReceive = list.filter(p => payStatus(p) !== 'paid').reduce((a,p) => a + remaining(p), 0);
+  const received = list.reduce((a,p) => a + (p.paidAmount||0), 0);
+  document.getElementById('payStats').innerHTML = 'Найдено: <b>' + list.length + '</b> · к получению по выборке: <b>' + fmtMoney(toReceive) + '</b> · внесено по выборке: <b>' + fmtMoney(received) + '</b>';
+  const LIMIT = 200;
+  const shown = list.slice(0, LIMIT);
+  tbody.innerHTML = shown.length ? shown.map(p => {
+    const l = leaseOf(p);
+    const st = payStatus(p);
+    let actions = '';
+    if(st === 'paid'){
+      actions = '<button class="btn sm ghost" data-action="unpay" data-id="' + p.id + '" type="button">Отменить оплату</button>';
+    } else if(st === 'partial'){
+      actions = '<button class="btn sm primary" data-action="pay" data-id="' + p.id + '" type="button">Доплатить</button> ' +
+        '<button class="btn sm ghost" data-action="unpay" data-id="' + p.id + '" type="button">Сбросить</button>';
+    } else {
+      actions = '<button class="btn sm primary" data-action="pay" data-id="' + p.id + '" type="button">Оплатить</button> ' +
+        '<button class="btn sm ghost" data-action="edit-payment" data-id="' + p.id + '" type="button" title="Изменить сумму/срок">✏️</button>';
+    }
+    return '<tr><td><b>' + esc(aptTitle(l.apartmentId)) + '</b><div class="small mut">' + esc(tenantName(l.tenantId)) + '</div></td>' +
+      '<td>' + fmtMonth(p.period) + '</td>' +
+      '<td>' + fmtDate(p.dueDate) + '</td>' +
+      '<td>' + fmtMoney(p.amount) + '</td>' +
+      '<td>' + (p.paidAmount ? fmtMoney(p.paidAmount) + (p.method ? '<div class="small mut">' + esc(p.method) + '</div>' : '') : '<span class="mut">—</span>') + '</td>' +
+      '<td>' + statusBadge(st) + '</td>' +
+      '<td class="ta-r" style="white-space:nowrap">' + actions + '</td></tr>';
+  }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--mut);padding:24px">Платежей по выбранным фильтрам нет</td></tr>';
+  if(list.length > LIMIT){
+    tbody.innerHTML += '<tr><td colspan="7" style="text-align:center;color:var(--mut);padding:12px">Показаны первые ' + LIMIT + ' из ' + list.length + ' — уточните фильтры</td></tr>';
+  }
+}
+
+/* ============================ ЭКСПОРТ / ИМПОРТ / ДЕМО ============================ */
+function doExport(){
+  const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'arenda-backup-' + TODAY + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Резервная копия скачана');
+}
+function maybeDemo(){
+  const hasData = db.apartments.length || db.tenants.length || db.leases.length;
+  const run = () => { seedDemo(); renderAll(); toast('Демо-данные загружены'); };
+  if(hasData) confirmModal('Заменить текущие данные демонстрационным набором?', run, 'Заменить');
+  else run();
+}
+
+/* ============================ СОБЫТИЯ ============================ */
+const actions = {
+  'tab': el => { currentTab = el.dataset.tab; renderMain(); renderNav(); },
+  'demo': maybeDemo,
+  'export': doExport,
+  'import': () => document.getElementById('importFile').click(),
+  'close-modal': closeModal,
+  'add-apartment': () => openApartmentModal(),
+  'edit-apartment': el => openApartmentModal(byId(db.apartments, el.dataset.id)),
+  'delete-apartment': el => delApartment(el.dataset.id),
+  'rent-apartment': el => openLeaseModal(null, {apartmentId: el.dataset.id, rent: (byId(db.apartments, el.dataset.id)||{}).rent, startDate: TODAY}),
+  'add-tenant': () => openTenantModal(),
+  'edit-tenant': el => openTenantModal(byId(db.tenants, el.dataset.id)),
+  'delete-tenant': el => delTenant(el.dataset.id),
+  'add-lease': () => openLeaseModal(),
+  'edit-lease': el => openLeaseModal(byId(db.leases, el.dataset.id)),
+  'delete-lease': el => delLease(el.dataset.id),
+  'end-lease': el => openEndLease(byId(db.leases, el.dataset.id)),
+  'pay': el => openPayModal(el.dataset.id),
+  'unpay': el => unpay(el.dataset.id),
+  'edit-payment': el => openEditPayment(el.dataset.id)
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if(!el) return;
+  const fn = actions[el.dataset.action];
+  if(fn) fn(el);
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+document.getElementById('importFile').addEventListener('change', e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    let d;
+    try{
+      d = JSON.parse(r.result);
+      if(!d || !Array.isArray(d.apartments) || !Array.isArray(d.tenants) || !Array.isArray(d.leases) || !Array.isArray(d.payments)) throw new Error('bad');
+    }catch(err){
+      toast('Не удалось прочитать файл — это не резервная копия приложения');
+      return;
+    }
+    confirmModal('Импорт заменит все текущие данные (' + d.apartments.length + ' кв., ' + d.leases.length + ' дог.). Продолжить?', () => {
+      db = d;
+      save(); renderAll(); toast('Данные импортированы');
+    }, 'Импортировать');
+  };
+  r.readAsText(f);
+});
+
+/* ============================ СТАРТ ============================ */
+renderAll();
+</script>
+</body>
+</html>
